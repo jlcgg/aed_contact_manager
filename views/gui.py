@@ -1,6 +1,7 @@
 from controllers import ContactManager
 from tkinter import *
 from tkinter.scrolledtext import ScrolledText
+from tkinter import messagebox
 
 class ContactManagerGUI:
     def __init__(self):
@@ -33,6 +34,8 @@ class ContactManagerGUI:
         frm_buttons.grid(sticky=W, column=0, row=1)
         btn_add_contact = Button(frm_buttons, text="Add contact", command=self.btn_add_contact_action)
         btn_add_contact.pack(side=LEFT)
+        btn_remove_contact = Button(frm_buttons, text="Remove contact", command=self.btn_remove_contact_remove_action)
+        btn_remove_contact.pack(side=LEFT)
 
         frm_find = Frame(frm_buttons)
         frm_find.pack(side=RIGHT)
@@ -91,9 +94,28 @@ class ContactManagerGUI:
         name = self.add_contact_name.get()
         email_address = self.add_contact_email_address.get()
         phone_number = self.add_contact_phone_number.get()
-        self.cm.create_contact(name, email_address, phone_number)
+        if not self.cm.is_valid_email_address(email_address) and not self.cm.is_valid_phone_number(phone_number):
+            messagebox.showwarning('Error', 'Invalid email and phone number!')
+            parent.deiconify()
+        elif not self.cm.is_valid_email_address(email_address):
+            messagebox.showwarning('Error', 'Invalid email!')
+            parent.deiconify()
+        elif not self.cm.is_valid_phone_number(phone_number):
+            messagebox.showwarning('Error', 'Invalid phone number!')
+            parent.deiconify()
+        else:
+            self.cm.create_contact(name, email_address, phone_number)
+            self.populate_list()
+            parent.destroy()
+        
+
+    def btn_remove_contact_remove_action(self):
+        selected_name = self.listbox.get(ACTIVE)
+        contact = self.cm.get_contact(selected_name)
+        self.cm.delete_contact(contact.get_name())
         self.populate_list()
-        parent.destroy()
+        
+    
 
     def btn_find_contacts_action(self, name):
         contacts = self.cm.find_contacts(name)
